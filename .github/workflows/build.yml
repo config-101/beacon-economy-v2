@@ -20,7 +20,13 @@ jobs:
         with:
           distribution: temurin
           java-version: '25'
-          cache: gradle
+
+      - name: Check project files
+        run: |
+          ls -la
+          test -f build.gradle
+          test -f settings.gradle
+          test -d src
 
       - name: Build
         run: gradle build
