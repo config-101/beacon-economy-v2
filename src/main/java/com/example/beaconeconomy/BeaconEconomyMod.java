@@ -13,7 +13,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
@@ -21,7 +21,7 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
@@ -127,8 +127,8 @@ public class BeaconEconomyMod implements ModInitializer {
                                 }
                                 addBalance(sender.getUUID(), -amount);
                                 addBalance(target.getUUID(), amount);
-                                sender.sendSystemMessage(Component.literal("Paid " + target.getGameProfile().getName() + " $" + format(amount) + ".").withStyle(ChatFormatting.GREEN));
-                                target.sendSystemMessage(Component.literal(sender.getGameProfile().getName() + " paid you $" + format(amount) + ".").withStyle(ChatFormatting.GREEN));
+                                sender.sendSystemMessage(Component.literal("Paid " + target.getName().getString() + " $" + format(amount) + ".").withStyle(ChatFormatting.GREEN));
+                                target.sendSystemMessage(Component.literal(sender.getName().getString() + " paid you $" + format(amount) + ".").withStyle(ChatFormatting.GREEN));
                                 saveBalances();
                                 refreshSidebar();
                                 return 1;
@@ -180,7 +180,7 @@ public class BeaconEconomyMod implements ModInitializer {
         }
 
         @Override
-        public void clicked(int slotId, int button, ClickType clickType, Player player) {
+        public void clicked(int slotId, int button, ContainerInput containerInput, Player player) {
             if (slotId == 13 && player instanceof ServerPlayer serverPlayer) {
                 SellResult result = sellFarmItems(serverPlayer);
                 if (result.itemsSold <= 0) {
@@ -194,7 +194,7 @@ public class BeaconEconomyMod implements ModInitializer {
                 return;
             }
             if (slotId >= 0 && slotId < 27) return;
-            super.clicked(slotId, button, clickType, player);
+            super.clicked(slotId, button, containerInput, player);
         }
 
         @Override
@@ -233,7 +233,7 @@ public class BeaconEconomyMod implements ModInitializer {
             ItemStack stack = inv.getItem(i);
             if (stack.isEmpty()) continue;
 
-            ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
+            Identifier itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
             Integer price = prices.get(itemId.toString());
             if (price == null || price <= 0) continue;
 
@@ -307,12 +307,7 @@ public class BeaconEconomyMod implements ModInitializer {
     private static String lookupName(UUID uuid) {
         if (server != null) {
             ServerPlayer online = server.getPlayerList().getPlayer(uuid);
-            if (online != null) return online.getGameProfile().getName();
-            try {
-                return server.getProfileCache().get(uuid).map(profile -> profile.getName()).orElse(uuid.toString().substring(0, 8));
-            } catch (Exception ignored) {
-            }
-        }
+            if (online != null) return online.getName().getString();        }
         return uuid.toString().substring(0, 8);
     }
 
