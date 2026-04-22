@@ -16,6 +16,7 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -34,6 +35,7 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
@@ -203,7 +205,7 @@ public class BeaconEconomyMod implements ModInitializer {
                     .executes(ctx -> sendSellablePage(ctx.getSource().getPlayerOrException(), IntegerArgumentType.getInteger(ctx, "page")))));
 
             dispatcher.register(Commands.literal("clearlag")
-                .requires(source -> source.hasPermission(2))
+                .requires(source -> source.permissions().hasPermission(net.minecraft.server.permissions.Permissions.COMMANDS_MODERATOR))
                 .executes(ctx -> startClearlag()));
 
             dispatcher.register(Commands.literal("yes")
@@ -214,7 +216,7 @@ public class BeaconEconomyMod implements ModInitializer {
                 .executes(ctx -> surrenderWarden(ctx.getSource().getPlayerOrException())));
 
             dispatcher.register(Commands.literal("wardenevent")
-                .requires(source -> source.hasPermission(2))
+                .requires(source -> source.permissions().hasPermission(net.minecraft.server.permissions.Permissions.COMMANDS_MODERATOR))
                 .then(Commands.literal("start").executes(ctx -> forceStartWardenEvent()))
                 .then(Commands.literal("cancel").executes(ctx -> cancelWardenEvent(true)))
                 .then(Commands.literal("status").executes(ctx -> {
@@ -261,7 +263,7 @@ public class BeaconEconomyMod implements ModInitializer {
         if (clearlagTicks <= 0) {
             clearlagTicks = -1;
             for (ServerLevel level : server.getAllLevels()) {
-                runCommand("execute in " + level.dimension().location() + " run kill @e[type=minecraft:item]");
+                runCommand("execute in " + dimensionId(level) + " run kill @e[type=minecraft:item]");
             }
             broadcast(Component.literal("✦ Beacon Economy ✦").withStyle(ChatFormatting.GOLD)
                 .append(Component.literal(" ✓ Clearlag complete. Dropped items were removed.").withStyle(ChatFormatting.GREEN)));
@@ -568,7 +570,7 @@ public class BeaconEconomyMod implements ModInitializer {
     private static void startWardenOffer(boolean forced) {
         ServerLevel level = server.overworld();
         BlockPos pos = randomWardenPos(level);
-        wardenDimension = level.dimension().location().toString();
+        wardenDimension = dimensionId(level);
         wardenPos = new Vec3(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
         wardenUuid = null;
         wardenAccepted.clear();
@@ -669,7 +671,7 @@ public class BeaconEconomyMod implements ModInitializer {
                 if (wardenSurrendered.contains(uuid)) continue;
                 ServerPlayer player = server.getPlayerList().getPlayer(uuid);
                 if (player == null || wardenPos == null) continue;
-                if (!player.level().dimension().location().toString().equals(wardenDimension)) continue;
+                if (!dimensionId(player.level()).equals(wardenDimension)) continue;
                 if (player.position().distanceToSqr(wardenPos) <= 50.0 * 50.0) {
                     addBalance(uuid, WARDEN_REWARD);
                     paid++;
@@ -731,7 +733,7 @@ public class BeaconEconomyMod implements ModInitializer {
     private static Entity getWardenEntity() {
         if (wardenUuid == null || wardenDimension == null) return null;
         for (ServerLevel level : server.getAllLevels()) {
-            if (!level.dimension().location().toString().equals(wardenDimension)) continue;
+            if (!dimensionId(level).equals(wardenDimension)) continue;
             Entity entity = level.getEntity(wardenUuid);
             if (entity != null) return entity;
         }
@@ -740,7 +742,7 @@ public class BeaconEconomyMod implements ModInitializer {
 
     private static Entity findTaggedWarden(ServerLevel level) {
         for (Entity entity : level.getAllEntities()) {
-            if (entity instanceof Warden && entity.getTags().contains("beacon_economy_boss")) return entity;
+            if (entity instanceof Warden && wardenPos != null && entity.position().distanceToSqr(wardenPos) <= 16.0 * 16.0) return entity;
         }
         return null;
     }
@@ -748,6 +750,15 @@ public class BeaconEconomyMod implements ModInitializer {
     private static void addBalance(UUID uuid, double amount) { balances.put(uuid, Math.max(0, balances.getOrDefault(uuid, 0.0) + amount)); }
     private static double getBalance(ServerPlayer player) { return balances.getOrDefault(player.getUUID(), 0.0); }
     private static void remember(ServerPlayer player) { knownNames.put(player.getUUID(), player.getName().getString()); balances.putIfAbsent(player.getUUID(), 0.0); }
+
+
+    private static String dimensionId(Level level) {
+        if (server != null) {
+            if (level.dimension().equals(Level.NETHER)) return "minecraft:the_nether";
+            if (level.dimension().equals(Level.END)) return "minecraft:the_end";
+        }
+        return "minecraft:overworld";
+    }
 
     private static void runCommand(String command) {
         try { server.getCommands().performPrefixedCommand(server.createCommandSourceStack(), command); } catch (Exception ignored) {}
@@ -758,7 +769,7 @@ public class BeaconEconomyMod implements ModInitializer {
         for (ServerPlayer player : server.getPlayerList().getPlayers()) player.sendSystemMessage(component);
     }
 
-    private static Component prefix() { return Component.literal("✦ Beacon Economy ✦").withStyle(ChatFormatting.GOLD); }
+    private static MutableComponent prefix() { return Component.literal("✦ Beacon Economy ✦").withStyle(ChatFormatting.GOLD); }
     private static String quote(String name) { return "\"" + name.replace("\\", "\\\\").replace("\"", "\\\"") + "\""; }
     private static String escapeScoreName(String name) { return name.replace("\\", "\\\\").replace("\"", "\\\""); }
     private static String formatCoord(double value) { return String.format(Locale.ROOT, "%.2f", value); }
@@ -905,7 +916,7 @@ public class BeaconEconomyMod implements ModInitializer {
     private record PlayerData(String name, double balance) {}
     private record ReturnPoint(String dimension, double x, double y, double z) {
         static ReturnPoint from(ServerPlayer player) {
-            return new ReturnPoint(player.level().dimension().location().toString(), player.getX(), player.getY(), player.getZ());
+            return new ReturnPoint(dimensionId(player.level()), player.getX(), player.getY(), player.getZ());
         }
     }
 }
