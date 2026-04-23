@@ -1,0 +1,21 @@
+spawn-world: beacon_spawn
+survival-world: world
+spawn-location:
+  x: 0.5
+  y: 81.0
+  z: 0.5
+  yaw: 0.0
+  pitch: 0.0
+teleport-delay-seconds: 5
+wild:
+  min-radius: 1500
+  max-radius: 5000
+rift-dagger:
+  custom-model-data: 10001
+  cooldown-seconds: 250
+  hover-seconds: 5
+  rise-height: 20
+  max-target-distance: 70
+  slash-radius: 4.5
+  displacement-radius: 15
+contact-line: 'Contact Danzi on Discord if you have questions.'

@@ -1,24 +1,45 @@
-# Beacon Economy v1.0.0
+# Beacon Economy Paper Test Pack
 
-Fabric mod for Minecraft/game version `26.1.2`.
+This is a first **Paper plugin test pack** for the Beacon Economy server concept.
+It includes a core playable slice so you can start testing server flow while the larger systems are still being expanded.
 
-## Features
+## Included in this test pack
+- Protected hub spawn world (`beacon_spawn`) generated automatically
+- `/spawn`, `/wild`, `/tutorial`, `/behelp`
+- Login always returns players to spawn
+- 10-second PvP combat tag with logout kill
+- Homes system with max 3 homes and a GUI
+- Home restrictions (no spawn world, no nether roof)
+- Rift Dagger Forgotten Relic test implementation
+- `/relic info`
+- `/beadmin giveriftdagger [player]`
+- `/beadmin hubregen`
+- Starter resource pack folder with Rift Dagger texture + GUI textures
 
-- Players can only sell farm items by **sneak/shift-right-clicking a beacon**.
-- Sneak-right-click opens a beacon sell HUD.
-- Clicking the emerald in the HUD confirms the sale.
-- Top 5 richest players are shown on the right side of the screen using the vanilla scoreboard sidebar.
-- Player balances save in the world folder as `beacon-economy-balances.json`.
-- Farm item prices are editable in `beacon-economy-prices.json` in the world folder after the first server run.
+## Not complete yet
+The following are still planned / scaffold-stage and not fully implemented in this test pack:
+- Full economy + sell beacon loop
+- Fancy side scoreboard
+- Rank / prestige progression
+- AFK money zones
+- Pets, black market, spawner shop
+- Full Void Drifter boss system
+- All 10 Forgotten Relics
+- Full spawn mega-build
 
 ## Build
+Use GitHub Actions or local Gradle:
 
 ```bash
-./gradlew build
+gradle build
 ```
 
-The jar will be in `build/libs/`.
+The jar will be placed in:
 
-## Notes
+```text
+build/libs/
+```
 
-This project intentionally does **not** include `/sell`. Selling is only reachable through the beacon HUD.
+## Resource pack
+The resource pack source is included in the `resource-pack` folder of the bundle zip.
+You can zip that folder and host it, or expand it later.

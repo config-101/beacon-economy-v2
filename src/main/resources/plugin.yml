@@ -1,0 +1,30 @@
+name: BeaconEconomy
+main: com.danzi.beaconeconomy.BeaconEconomyPlugin
+version: '${version}'
+api-version: '1.21'
+author: Danzi
+commands:
+  spawn:
+    description: Teleport to spawn hub.
+  wild:
+    description: Teleport to random wilderness coordinates.
+  tutorial:
+    description: Open or teleport to the tutorial area.
+  behelp:
+    description: Open Beacon Economy help.
+  sethome:
+    description: Set a home.
+  home:
+    description: Teleport to a home.
+  homes:
+    description: Open the homes menu.
+  delhome:
+    description: Delete a home.
+  relic:
+    description: Forgotten Relic command.
+  beadmin:
+    description: Beacon Economy admin tools.
+    permission: beaconeconomy.admin
+permissions:
+  beaconeconomy.admin:
+    default: op

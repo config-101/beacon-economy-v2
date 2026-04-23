@@ -1,9 +1,1 @@
-pluginManagement {
-    repositories {
-        maven { url = 'https://maven.fabricmc.net/' }
-        gradlePluginPortal()
-        mavenCentral()
-    }
-}
-
-rootProject.name = 'beacon-economy-v1'
+rootProject.name = 'beacon-economy-paper-test'

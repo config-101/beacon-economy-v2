@@ -1,34 +1,32 @@
-name: Build Fabric Mod
+name: build
 
 on:
   workflow_dispatch:
   push:
-
-permissions:
-  contents: read
+    branches: [ main, master ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout files
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Java 25
+      - name: Set up Java 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '25'
+          java-version: '21'
 
-      - name: Show files
-        run: ls -la && find src -maxdepth 5 -type f | sort
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Build
         run: gradle build
 
-      - name: Upload mod jar
+      - name: Upload jar
         uses: actions/upload-artifact@v4
         with:
-          name: beacon-economy-v1-jar
+          name: beacon-economy-paper-test
           path: build/libs/*.jar
