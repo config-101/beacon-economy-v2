@@ -31,9 +31,9 @@ public class RelicManager {
         ItemMeta meta = item.getItemMeta();
         meta.displayName(net.kyori.adventure.text.Component.text("Rift Dagger", net.kyori.adventure.text.format.NamedTextColor.DARK_PURPLE));
         meta.lore(List.of(
-            "Forgotten Relic",
-            "Right-click to invoke its will.",
-            "Use /relic info while holding it."
+            net.kyori.adventure.text.Component.text("Forgotten Relic", net.kyori.adventure.text.format.NamedTextColor.GRAY),
+            net.kyori.adventure.text.Component.text("Right-click to invoke its will.", net.kyori.adventure.text.format.NamedTextColor.DARK_PURPLE),
+            net.kyori.adventure.text.Component.text("Use /relic info while holding it.", net.kyori.adventure.text.format.NamedTextColor.LIGHT_PURPLE)
         ));
         meta.getPersistentDataContainer().set(relicIdKey, PersistentDataType.STRING, "rift_dagger");
         meta.setCustomModelData(plugin.getConfig().getInt("rift-dagger.custom-model-data", 10001));
