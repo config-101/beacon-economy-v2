@@ -57,14 +57,14 @@ public class BeaconEconomyPlugin extends JavaPlugin {
         registerCommands();
         registerListeners();
 
+        Bukkit.getScheduler().runTaskTimer(this, () -> relicManager.monitorDroppedRelics(), 20L, 20L);
+
         getLogger().info("Beacon Economy Paper Test enabled.");
     }
 
     @Override
     public void onDisable() {
-        if (homeManager != null) {
-            homeManager.save();
-        }
+        if (homeManager != null) homeManager.save();
     }
 
     private World createOrLoadSpawnWorld() {
@@ -108,35 +108,14 @@ public class BeaconEconomyPlugin extends JavaPlugin {
     private void bind(String name, Object executor) {
         PluginCommand command = getCommand(name);
         if (command == null) return;
-        if (executor instanceof org.bukkit.command.CommandExecutor cmd) {
-            command.setExecutor(cmd);
-        }
-        if (executor instanceof org.bukkit.command.TabCompleter tab) {
-            command.setTabCompleter(tab);
-        }
+        if (executor instanceof org.bukkit.command.CommandExecutor cmd) command.setExecutor(cmd);
+        if (executor instanceof org.bukkit.command.TabCompleter tab) command.setTabCompleter(tab);
     }
 
-    public HomeManager getHomeManager() {
-        return homeManager;
-    }
-
-    public TeleportManager getTeleportManager() {
-        return teleportManager;
-    }
-
-    public RelicManager getRelicManager() {
-        return relicManager;
-    }
-
-    public World getSpawnWorld() {
-        return spawnWorld;
-    }
-
-    public Location getSpawnLocation() {
-        return spawnLocation.clone();
-    }
-
-    public World getSurvivalWorld() {
-        return Bukkit.getWorld(getConfig().getString("survival-world", "world"));
-    }
+    public HomeManager getHomeManager() { return homeManager; }
+    public TeleportManager getTeleportManager() { return teleportManager; }
+    public RelicManager getRelicManager() { return relicManager; }
+    public World getSpawnWorld() { return spawnWorld; }
+    public Location getSpawnLocation() { return spawnLocation.clone(); }
+    public World getSurvivalWorld() { return Bukkit.getWorld(getConfig().getString("survival-world", "world")); }
 }

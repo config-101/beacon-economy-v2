@@ -2,12 +2,11 @@ package com.danzi.beaconeconomy.relic;
 
 import com.danzi.beaconeconomy.BeaconEconomyPlugin;
 import com.danzi.beaconeconomy.util.Msg;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.*;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Tameable;
@@ -15,12 +14,15 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.ItemDespawnEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.util.Vector;
+import org.bukkit.util.BlockIterator;
+import org.bukkit.util.RayTraceResult;
 
 import java.util.List;
 import java.util.Random;
@@ -53,9 +55,14 @@ public class RelicListener implements Listener {
 
         RelicManager.ActiveRiftState active = relicManager.getActive(player);
         if (active != null) {
-            if ((event.getAction() == Action.RIGHT_CLICK_BLOCK) && event.getClickedBlock() != null) {
+            if (event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) {
                 event.setCancelled(true);
-                handlePhaseTwo(player, event.getClickedBlock(), active);
+                Block targetBlock = resolveTargetBlock(player, event.getClickedBlock());
+                if (targetBlock == null) {
+                    Msg.send(player, "The relic finds no valid place to sever.", NamedTextColor.RED);
+                    return;
+                }
+                handlePhaseTwo(player, targetBlock, active);
             }
             return;
         }
@@ -71,6 +78,45 @@ public class RelicListener implements Listener {
             return;
         }
         activateRift(player);
+    }
+
+    @EventHandler
+    public void onItemDespawn(ItemDespawnEvent event) {
+        if (!relicManager.isRelic(event.getEntity().getItemStack())) return;
+        relicManager.reclaimRelic(event.getEntity().getItemStack());
+    }
+
+    @EventHandler
+    public void onRelicItemDamage(EntityDamageEvent event) {
+        if (!(event.getEntity() instanceof Item item)) return;
+        if (!relicManager.isRelic(item.getItemStack())) return;
+        switch (event.getCause()) {
+            case VOID, LAVA, FIRE, FIRE_TICK, CONTACT, ENTITY_EXPLOSION, BLOCK_EXPLOSION -> {
+                event.setCancelled(true);
+                relicManager.reclaimRelic(item.getItemStack());
+                item.remove();
+            }
+            default -> {}
+        }
+    }
+
+    private Block resolveTargetBlock(Player player, Block clickedBlock) {
+        double max = plugin.getConfig().getDouble("rift-dagger.max-target-distance", 70.0);
+        RayTraceResult trace = player.rayTraceBlocks(max, FluidCollisionMode.NEVER);
+        Block hit = trace != null ? trace.getHitBlock() : null;
+        if (hit == null) hit = clickedBlock;
+        if (hit == null) {
+            BlockIterator iterator = new BlockIterator(player, (int) Math.ceil(max));
+            while (iterator.hasNext()) {
+                Block next = iterator.next();
+                if (!next.isEmpty()) hit = next;
+            }
+        }
+        if (hit == null) return null;
+        Block feet = hit.getRelative(0, 1, 0);
+        Block head = hit.getRelative(0, 2, 0);
+        if (!feet.isPassable() || !head.isPassable()) return null;
+        return hit;
     }
 
     private boolean hasBlocksAbove(Player player) {
@@ -89,13 +135,14 @@ public class RelicListener implements Listener {
         Location hover = original.clone().add(0, plugin.getConfig().getDouble("rift-dagger.rise-height", 20.0), 0);
         boolean originalAllowFlight = player.getAllowFlight();
         player.getWorld().spawnParticle(Particle.PORTAL, original, 200, 0.6, 1.0, 0.6, 0.2);
+        player.getWorld().spawnParticle(Particle.REVERSE_PORTAL, hover, 120, 0.5, 0.8, 0.5, 0.1);
         player.getWorld().playSound(original, Sound.ENTITY_ENDERMAN_TELEPORT, 1.0f, 0.7f);
         player.teleport(hover);
         player.setAllowFlight(true);
         player.setFlying(true);
-        player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 20 * plugin.getConfig().getInt("rift-dagger.hover-seconds", 5), 0, false, false, false));
-        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, 20 * plugin.getConfig().getInt("rift-dagger.hover-seconds", 5), 1, false, false, false));
-        player.getWorld().spawnParticle(Particle.DRAGON_BREATH, hover, 60, 0.4, 0.6, 0.4, 0.02);
+        int hoverTicks = 20 * plugin.getConfig().getInt("rift-dagger.hover-seconds", 5);
+        player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, hoverTicks, 0, false, false, false));
+        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_FALLING, hoverTicks, 1, false, false, false));
         Msg.send(player, "The Rift Dagger tears the world open beneath you.", NamedTextColor.LIGHT_PURPLE);
         relicManager.startCooldown(player);
         relicManager.setActive(player, new RelicManager.ActiveRiftState(original, originalAllowFlight, () -> failReturn(player, original, originalAllowFlight)));
@@ -126,9 +173,7 @@ public class RelicListener implements Listener {
         for (Entity entity : world.getNearbyEntities(target, radius, radius, radius)) {
             if (!(entity instanceof LivingEntity living)) continue;
             if (entity.equals(player)) continue;
-            if (entity instanceof Tameable tameable && tameable.getOwnerUniqueId() != null && tameable.getOwnerUniqueId().equals(player.getUniqueId())) {
-                continue;
-            }
+            if (entity instanceof Tameable tameable && tameable.getOwnerUniqueId() != null && tameable.getOwnerUniqueId().equals(player.getUniqueId())) continue;
             living.damage(16.0, player);
             Location displaced = target.clone().add(random.nextDouble() * displacement * (random.nextBoolean() ? 1 : -1), 0, random.nextDouble() * displacement * (random.nextBoolean() ? 1 : -1));
             displaced.setY(world.getHighestBlockYAt(displaced) + 1.0);

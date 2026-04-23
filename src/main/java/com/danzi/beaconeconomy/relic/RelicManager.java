@@ -1,8 +1,13 @@
 package com.danzi.beaconeconomy.relic;
 
 import com.danzi.beaconeconomy.BeaconEconomyPlugin;
+import com.danzi.beaconeconomy.util.Msg;
+import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.World;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -42,10 +47,17 @@ public class RelicManager {
         return item;
     }
 
+    public boolean isRelic(ItemStack item) {
+        return getRelicId(item) != null;
+    }
+
+    public String getRelicId(ItemStack item) {
+        if (item == null || item.getType() == Material.AIR || !item.hasItemMeta()) return null;
+        return item.getItemMeta().getPersistentDataContainer().get(relicIdKey, PersistentDataType.STRING);
+    }
+
     public boolean isRiftDagger(ItemStack item) {
-        if (item == null || item.getType() == Material.AIR || !item.hasItemMeta()) return false;
-        String id = item.getItemMeta().getPersistentDataContainer().get(relicIdKey, PersistentDataType.STRING);
-        return "rift_dagger".equals(id);
+        return "rift_dagger".equals(getRelicId(item));
     }
 
     public long getCooldownRemaining(Player player) {
@@ -82,6 +94,23 @@ public class RelicManager {
 
     public void clearActive(UUID uuid) {
         activeRifts.remove(uuid);
+    }
+
+    public void reclaimRelic(ItemStack item) {
+        if (!isRelic(item)) return;
+        Bukkit.broadcast(Msg.line("The void has reclaimed one of its belongings.", NamedTextColor.DARK_PURPLE));
+    }
+
+    public void monitorDroppedRelics() {
+        for (World world : Bukkit.getWorlds()) {
+            for (Item item : world.getEntitiesByClass(Item.class)) {
+                if (!isRelic(item.getItemStack())) continue;
+                if (item.getLocation().getY() <= world.getMinHeight() + 2) {
+                    reclaimRelic(item.getItemStack());
+                    item.remove();
+                }
+            }
+        }
     }
 
     public record ActiveRiftState(org.bukkit.Location originalLocation, boolean originalAllowFlight, Runnable onTimeout) {}
