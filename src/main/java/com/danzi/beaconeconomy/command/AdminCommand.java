@@ -30,13 +30,9 @@ public class AdminCommand implements CommandExecutor {
         }
         if (args[0].equalsIgnoreCase("giveriftdagger")) {
             Player target;
-            if (args.length >= 2) {
-                target = Bukkit.getPlayerExact(args[1]);
-            } else if (sender instanceof Player p) {
-                target = p;
-            } else {
-                target = null;
-            }
+            if (args.length >= 2) target = Bukkit.getPlayerExact(args[1]);
+            else if (sender instanceof Player p) target = p;
+            else target = null;
             if (target == null) {
                 sender.sendMessage("Target not found.");
                 return true;
@@ -47,8 +43,8 @@ public class AdminCommand implements CommandExecutor {
             return true;
         }
         if (args[0].equalsIgnoreCase("hubregen")) {
-            SpawnHubBuilder.ensureHub(plugin.getSpawnWorld(), plugin.getSpawnLocation());
-            sender.sendMessage("Regenerated the spawn hub platform.");
+            SpawnHubBuilder.ensureHub(plugin, plugin.getSpawnWorld(), plugin.getSpawnLocation());
+            sender.sendMessage("Regenerated the Beacon Economy floating capital.");
             return true;
         }
         sender.sendMessage("Unknown subcommand.");

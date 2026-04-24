@@ -2,9 +2,9 @@ spawn-world: beacon_spawn
 survival-world: world
 spawn-location:
   x: 0.5
-  y: 81.0
+  y: 90.0
   z: 0.5
-  yaw: 0.0
+  yaw: 180.0
   pitch: 0.0
 teleport-delay-seconds: 5
 wild:

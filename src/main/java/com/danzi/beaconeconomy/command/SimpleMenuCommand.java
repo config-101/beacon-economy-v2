@@ -24,10 +24,9 @@ public class SimpleMenuCommand implements CommandExecutor {
         if (!(sender instanceof Player player)) return true;
         if (mode == Mode.HELP) {
             player.openInventory(InfoMenus.help(plugin, player));
-        } else {
-            // MVP test version: open tutorial GUI directly from anywhere.
-            player.openInventory(InfoMenus.tutorial(plugin, player));
+            return true;
         }
+        plugin.getTeleportManager().queue(player, plugin.getTutorialLocation(), "tutorial");
         return true;
     }
 }

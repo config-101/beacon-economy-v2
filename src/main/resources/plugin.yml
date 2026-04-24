@@ -1,17 +1,32 @@
 name: BeaconEconomy
-version: ${project.version}
 main: com.danzi.beaconeconomy.BeaconEconomyPlugin
+version: '${version}'
 api-version: '1.21'
 author: Danzi
 commands:
+  spawn:
+    description: Teleport to spawn hub.
+  wild:
+    description: Teleport to random wilderness coordinates.
+  tutorial:
+    description: Teleport to the tutorial quarter.
+  behelp:
+    description: Open Beacon Economy help.
+  info:
+    description: Show quick Beacon Economy info.
+  sethome:
+    description: Set a home.
+  home:
+    description: Teleport to a home.
+  homes:
+    description: Open the homes menu.
+  delhome:
+    description: Delete a home.
   relic:
-    description: Forgotten Relic information.
-    usage: /relic info
-  shockveiltest:
-    description: Gives Shockveil to an operator for testing.
-    usage: /shockveiltest
+    description: Forgotten Relic command.
+  beadmin:
+    description: Beacon Economy admin tools.
     permission: beaconeconomy.admin
 permissions:
   beaconeconomy.admin:
-    description: Beacon Economy admin commands.
     default: op

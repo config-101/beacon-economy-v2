@@ -1,55 +1,45 @@
-# ✦ Beacon Economy ✦ Shockveil Test Build
+# Beacon Economy Paper Test Pack
 
-Partial Paper 1.21 plugin foundation focused only on Forgotten Relic #2: **Shockveil**.
+This is a first **Paper plugin test pack** for the Beacon Economy server concept.
+It includes a core playable slice so you can start testing server flow while the larger systems are still being expanded.
 
-## Included
+## Included in this test pack
+- Protected hub spawn world (`beacon_spawn`) generated automatically
+- `/spawn`, `/wild`, `/tutorial`, `/behelp`
+- Login always returns players to spawn
+- 10-second PvP combat tag with logout kill
+- Homes system with max 3 homes and a GUI
+- Home restrictions (no spawn world, no nether roof)
+- Rift Dagger Forgotten Relic test implementation
+- `/relic info`
+- `/beadmin giveriftdagger [player]`
+- `/beadmin hubregen`
+- Starter resource pack folder with Rift Dagger texture + GUI textures
 
-- `Shockveil` test relic item
-- `/shockveiltest` OP command to receive it
-- `/relic info` support while holding Shockveil
-- 200 second cooldown
-- Disabled in `beacon_spawn`
-- 15 block shockwave radius
-- Close targets receive stronger damage/effects
-- Caster lock-in after cast
-- Caster-owned pets are excluded
-- Heavy particles and layered sounds
-- CustomModelData `10002`
-- Example resource-pack files and placeholder texture
-- GitHub Actions Maven build workflow
+## Not complete yet
+The following are still planned / scaffold-stage and not fully implemented in this test pack:
+- Full economy + sell beacon loop
+- Fancy side scoreboard
+- Rank / prestige progression
+- AFK money zones
+- Pets, black market, spawner shop
+- Full Void Drifter boss system
+- All 10 Forgotten Relics
+- Full spawn mega-build
 
-## Test command
-
-```text
-/shockveiltest
-```
-
-Requires OP or `beaconeconomy.admin`.
-
-## Build on GitHub
-
-Push this folder to GitHub, then open **Actions** and run/push the workflow. The built jar will be uploaded as the `BeaconEconomy-Shockveil-Test` artifact.
-
-## Local build
+## Build
+Use GitHub Actions or local Gradle:
 
 ```bash
-mvn package
+gradle build
 ```
 
-Jar output:
+The jar will be placed in:
 
 ```text
-target/beacon-economy-0.2.0-shockveil-test.jar
+build/libs/
 ```
 
-## Resource pack notes
-
-The included `resource-pack/` folder contains the model override and a placeholder texture:
-
-```text
-assets/minecraft/models/item/paper.json
-assets/beaconeconomy/models/item/shockveil.json
-assets/beaconeconomy/textures/item/shockveil.png
-```
-
-Replace `shockveil.png` with final art later. Keep CustomModelData at `10002` unless you also update the plugin code.
+## Resource pack
+The resource pack source is included in the `resource-pack` folder of the bundle zip.
+You can zip that folder and host it, or expand it later.

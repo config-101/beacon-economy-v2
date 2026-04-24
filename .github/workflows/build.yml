@@ -1,14 +1,14 @@
-name: Build Beacon Economy Test Jar
+name: build
 
 on:
-  push:
-    branches: [ "main", "master", "shockveil-test" ]
-  pull_request:
   workflow_dispatch:
+  push:
+    branches: [ main, master ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -18,13 +18,15 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-          cache: maven
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Build
-        run: mvn -B package
+        run: gradle build
 
       - name: Upload jar
         uses: actions/upload-artifact@v4
         with:
-          name: BeaconEconomy-Shockveil-Test
-          path: target/*.jar
+          name: beacon-economy-paper-test
+          path: build/libs/*.jar
