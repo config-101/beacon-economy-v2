@@ -1,130 +1,106 @@
 package com.danzi.beaconeconomy;
 
-import com.danzi.beaconeconomy.command.AdminCommand;
-import com.danzi.beaconeconomy.command.HomeCommand;
-import com.danzi.beaconeconomy.command.InfoCommand;
-import com.danzi.beaconeconomy.command.RelicCommand;
-import com.danzi.beaconeconomy.command.SimpleMenuCommand;
-import com.danzi.beaconeconomy.command.SpawnCommand;
-import com.danzi.beaconeconomy.command.WildCommand;
-import com.danzi.beaconeconomy.data.HomeManager;
+import com.danzi.beaconeconomy.command.*;
+import com.danzi.beaconeconomy.data.DataManager;
 import com.danzi.beaconeconomy.gui.MenuListener;
-import com.danzi.beaconeconomy.listener.CombatListener;
-import com.danzi.beaconeconomy.listener.JoinListener;
-import com.danzi.beaconeconomy.listener.JumpPadListener;
-import com.danzi.beaconeconomy.listener.NpcListener;
-import com.danzi.beaconeconomy.listener.ProtectionListener;
-import com.danzi.beaconeconomy.relic.RelicListener;
+import com.danzi.beaconeconomy.listener.*;
 import com.danzi.beaconeconomy.relic.RelicManager;
 import com.danzi.beaconeconomy.teleport.TeleportManager;
-import com.danzi.beaconeconomy.world.SpawnHubBuilder;
 import com.danzi.beaconeconomy.world.VoidChunkGenerator;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.World;
-import org.bukkit.WorldCreator;
+import org.bukkit.*;
 import org.bukkit.command.PluginCommand;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class BeaconEconomyPlugin extends JavaPlugin {
-    private HomeManager homeManager;
+    private DataManager dataManager;
     private TeleportManager teleportManager;
     private RelicManager relicManager;
-    private World spawnWorld;
-    private Location spawnLocation;
+    private World introWorld;
+    private Location introLocation;
+
+    public static final String[] RANKS = {"Drifter","Vagrant","Scavenger","Outcast","Rogue","Survivor"};
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
+        introWorld = createIntroWorld();
+        introLocation = new Location(introWorld,
+                getConfig().getDouble("intro-location.x"),
+                getConfig().getDouble("intro-location.y"),
+                getConfig().getDouble("intro-location.z"),
+                (float) getConfig().getDouble("intro-location.yaw"),
+                (float) getConfig().getDouble("intro-location.pitch"));
 
-        this.spawnWorld = createOrLoadSpawnWorld();
-        ConfigurationSection spawnSection = getConfig().getConfigurationSection("spawn-location");
-        this.spawnLocation = new Location(
-            spawnWorld,
-            spawnSection.getDouble("x"),
-            spawnSection.getDouble("y"),
-            spawnSection.getDouble("z"),
-            (float) spawnSection.getDouble("yaw"),
-            (float) spawnSection.getDouble("pitch")
-        );
-
-        SpawnHubBuilder.ensureHub(this, spawnWorld, spawnLocation);
-        spawnWorld.setSpawnLocation(spawnLocation.getBlockX(), spawnLocation.getBlockY(), spawnLocation.getBlockZ());
-
-        this.homeManager = new HomeManager(this);
-        this.homeManager.load();
-        this.teleportManager = new TeleportManager(this);
-        this.relicManager = new RelicManager(this);
+        dataManager = new DataManager(this);
+        dataManager.load();
+        teleportManager = new TeleportManager(this);
+        relicManager = new RelicManager(this);
+        relicManager.startTasks();
 
         registerCommands();
-        registerListeners();
+        Bukkit.getPluginManager().registerEvents(new JoinListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new ProtectionListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new MenuListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new RelicListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new BeaconListener(this), this);
 
-        Bukkit.getScheduler().runTaskTimer(this, () -> relicManager.monitorDroppedRelics(), 20L, 20L);
-
-        getLogger().info("Beacon Economy Jump 1 Spawn Pack enabled.");
+        getLogger().info("Beacon Economy Systems Build enabled.");
     }
 
     @Override
     public void onDisable() {
-        if (homeManager != null) homeManager.save();
+        if (dataManager != null) dataManager.save();
     }
 
-    private World createOrLoadSpawnWorld() {
-        String worldName = getConfig().getString("spawn-world", "beacon_spawn");
-        World existing = Bukkit.getWorld(worldName);
-        if (existing != null) return existing;
-        WorldCreator creator = new WorldCreator(worldName);
-        creator.generator(new VoidChunkGenerator());
-        World world = Bukkit.createWorld(creator);
-        if (world != null) {
-            world.setGameRule(org.bukkit.GameRule.DO_MOB_SPAWNING, false);
-            world.setGameRule(org.bukkit.GameRule.DO_WEATHER_CYCLE, false);
-            world.setGameRule(org.bukkit.GameRule.DO_DAYLIGHT_CYCLE, false);
-            world.setGameRule(org.bukkit.GameRule.ANNOUNCE_ADVANCEMENTS, false);
-            world.setTime(18000);
-            world.setStorm(false);
+    private World createIntroWorld() {
+        String name = getConfig().getString("intro-world", "beacon_intro");
+        World w = Bukkit.getWorld(name);
+        if (w == null) {
+            WorldCreator wc = new WorldCreator(name);
+            wc.generator(new VoidChunkGenerator());
+            w = Bukkit.createWorld(wc);
         }
-        return world;
+        if (w != null) {
+            w.setGameRule(GameRule.DO_MOB_SPAWNING, false);
+            w.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
+            w.setTime(18000);
+            w.setSpawnLocation(new Location(w, getConfig().getDouble("intro-location.x"), getConfig().getDouble("intro-location.y"), getConfig().getDouble("intro-location.z")));
+        }
+        return w;
     }
 
     private void registerCommands() {
-        bind("spawn", new SpawnCommand(this));
-        bind("wild", new WildCommand(this));
-        bind("tutorial", new SimpleMenuCommand(this, SimpleMenuCommand.Mode.TUTORIAL));
-        bind("behelp", new SimpleMenuCommand(this, SimpleMenuCommand.Mode.HELP));
         bind("info", new InfoCommand(this));
-        HomeCommand homeCommand = new HomeCommand(this);
-        bind("sethome", homeCommand);
-        bind("home", homeCommand);
-        bind("homes", homeCommand);
-        bind("delhome", homeCommand);
+        bind("behelp", new InfoCommand(this));
+        bind("tutorial", new InfoCommand(this));
+        bind("commands", new InfoCommand(this));
+        bind("becommands", new InfoCommand(this));
+        bind("wild", new WildCommand(this));
+        bind("spawn", new SpawnCommand(this));
+        HomeCommand hc = new HomeCommand(this);
+        bind("sethome", hc); bind("home", hc); bind("homes", hc); bind("delhome", hc);
         bind("relic", new RelicCommand(this));
+        RankCommand rc = new RankCommand(this);
+        bind("rank", rc); bind("ranks", rc); bind("rankup", rc); bind("prestige", rc); bind("prestiges", rc);
+        MoneyCommand mc = new MoneyCommand(this);
+        bind("money", mc); bind("balance", mc);
+        StaffCommand sc = new StaffCommand(this);
+        bind("clearlag", sc); bind("invsee", sc); bind("vanish", sc); bind("spectate", sc); bind("freeze", sc); bind("unfreeze", sc); bind("staffhelp", sc);
         bind("beadmin", new AdminCommand(this));
     }
 
-    private void registerListeners() {
-        Bukkit.getPluginManager().registerEvents(new JoinListener(this), this);
-        Bukkit.getPluginManager().registerEvents(new ProtectionListener(this), this);
-        Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);
-        Bukkit.getPluginManager().registerEvents(new RelicListener(this), this);
-        Bukkit.getPluginManager().registerEvents(new MenuListener(this), this);
-        Bukkit.getPluginManager().registerEvents(new NpcListener(this), this);
-        Bukkit.getPluginManager().registerEvents(new JumpPadListener(this), this);
+    private void bind(String name, Object exec) {
+        PluginCommand c = getCommand(name);
+        if (c == null) return;
+        if (exec instanceof org.bukkit.command.CommandExecutor ce) c.setExecutor(ce);
+        if (exec instanceof org.bukkit.command.TabCompleter tc) c.setTabCompleter(tc);
     }
 
-    private void bind(String name, Object executor) {
-        PluginCommand command = getCommand(name);
-        if (command == null) return;
-        if (executor instanceof org.bukkit.command.CommandExecutor cmd) command.setExecutor(cmd);
-        if (executor instanceof org.bukkit.command.TabCompleter tab) command.setTabCompleter(tab);
-    }
-
-    public HomeManager getHomeManager() { return homeManager; }
-    public TeleportManager getTeleportManager() { return teleportManager; }
-    public RelicManager getRelicManager() { return relicManager; }
-    public World getSpawnWorld() { return spawnWorld; }
-    public Location getSpawnLocation() { return spawnLocation.clone(); }
-    public Location getTutorialLocation() { return SpawnHubBuilder.tutorialLocation(spawnLocation); }
-    public World getSurvivalWorld() { return Bukkit.getWorld(getConfig().getString("survival-world", "world")); }
+    public DataManager data() { return dataManager; }
+    public TeleportManager teleports() { return teleportManager; }
+    public RelicManager relics() { return relicManager; }
+    public World introWorld() { return introWorld; }
+    public Location introLocation() { return introLocation.clone(); }
+    public World survivalWorld() { return Bukkit.getWorld(getConfig().getString("survival-world", "world")); }
 }

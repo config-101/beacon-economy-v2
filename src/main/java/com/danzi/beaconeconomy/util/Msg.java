@@ -3,6 +3,7 @@ package com.danzi.beaconeconomy.util;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 public final class Msg {
@@ -10,6 +11,10 @@ public final class Msg {
 
     public static Component prefix() {
         return Component.text("✦ Beacon Economy ✦ ", NamedTextColor.GOLD, TextDecoration.BOLD);
+    }
+
+    public static Component staffPrefix() {
+        return Component.text("✦ Beacon Economy Staff ✦ ", NamedTextColor.RED, TextDecoration.BOLD);
     }
 
     public static Component line(String text, NamedTextColor color) {
@@ -20,7 +25,13 @@ public final class Msg {
         player.sendMessage(line(text, color));
     }
 
-    public static Component contactLine() {
-        return Component.text("Contact Danzi on Discord if you have questions.", NamedTextColor.GRAY);
+    public static void broadcast(String text, NamedTextColor color) {
+        Bukkit.broadcast(line(text, color));
+    }
+
+    public static void staff(String text) {
+        Bukkit.getOnlinePlayers().stream()
+            .filter(p -> p.isOp() || p.hasPermission("beaconeconomy.admin"))
+            .forEach(p -> p.sendMessage(staffPrefix().append(Component.text(text, NamedTextColor.YELLOW))));
     }
 }

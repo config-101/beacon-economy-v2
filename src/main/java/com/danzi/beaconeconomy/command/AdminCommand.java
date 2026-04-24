@@ -1,53 +1,48 @@
 package com.danzi.beaconeconomy.command;
 
 import com.danzi.beaconeconomy.BeaconEconomyPlugin;
+import com.danzi.beaconeconomy.data.PlayerData;
+import com.danzi.beaconeconomy.gui.InfoMenus;
+import com.danzi.beaconeconomy.relic.RelicType;
 import com.danzi.beaconeconomy.util.Msg;
-import com.danzi.beaconeconomy.world.SpawnHubBuilder;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
+import org.bukkit.command.*;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 
 public class AdminCommand implements CommandExecutor {
     private final BeaconEconomyPlugin plugin;
+    public AdminCommand(BeaconEconomyPlugin plugin) { this.plugin = plugin; }
 
-    public AdminCommand(BeaconEconomyPlugin plugin) {
-        this.plugin = plugin;
-    }
+    @Override public boolean onCommand(CommandSender s, Command c, String l, String[] a) {
+        if (!s.hasPermission("beaconeconomy.admin") && !s.isOp()) { s.sendMessage("No permission."); return true; }
+        if (s instanceof Player p && a.length == 0) { p.openInventory(InfoMenus.admin(plugin, p)); return true; }
 
-    @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (!sender.isOp()) {
-            sender.sendMessage("No permission.");
+        if (a.length >= 1 && a[0].equalsIgnoreCase("giverelic")) {
+            if (!(s instanceof Player p) && a.length < 3) { s.sendMessage("Console: /beadmin giverelic <id> <player>"); return true; }
+            if (a.length < 2) { s.sendMessage("Use /beadmin giverelic <id> [player]"); return true; }
+            RelicType type = RelicType.byId(a[1]);
+            if (type == null) { s.sendMessage("Unknown relic id."); return true; }
+            Player target = a.length >= 3 ? Bukkit.getPlayerExact(a[2]) : (Player) s;
+            if (target == null) { s.sendMessage("Player not found."); return true; }
+            target.getInventory().addItem(plugin.relics().create(type));
+            Msg.send(target, "You received " + type.display + ".", NamedTextColor.DARK_PURPLE);
             return true;
         }
-        if (args.length == 0) {
-            sender.sendMessage("/beadmin giveriftdagger [player] | hubregen");
+
+        if (a.length >= 3 && a[0].equalsIgnoreCase("money")) {
+            Player t = Bukkit.getPlayerExact(a[1]);
+            long amount = parse(a[2]);
+            if (t == null || amount < 0) { s.sendMessage("Use /beadmin money <player> <amount>"); return true; }
+            PlayerData pd = plugin.data().get(t.getUniqueId());
+            pd.balance = amount;
+            plugin.data().save();
+            s.sendMessage("Set " + t.getName() + " balance to $" + amount);
             return true;
         }
-        if (args[0].equalsIgnoreCase("giveriftdagger")) {
-            Player target;
-            if (args.length >= 2) target = Bukkit.getPlayerExact(args[1]);
-            else if (sender instanceof Player p) target = p;
-            else target = null;
-            if (target == null) {
-                sender.sendMessage("Target not found.");
-                return true;
-            }
-            target.getInventory().addItem(plugin.getRelicManager().createRiftDagger());
-            Msg.send(target, "A Forgotten Relic has found its way into your hands.", NamedTextColor.LIGHT_PURPLE);
-            sender.sendMessage("Gave Rift Dagger to " + target.getName());
-            return true;
-        }
-        if (args[0].equalsIgnoreCase("hubregen")) {
-            SpawnHubBuilder.ensureHub(plugin, plugin.getSpawnWorld(), plugin.getSpawnLocation());
-            sender.sendMessage("Regenerated the Beacon Economy floating capital.");
-            return true;
-        }
-        sender.sendMessage("Unknown subcommand.");
+
+        s.sendMessage("Admin: /beadmin, /beadmin giverelic <id> [player], /beadmin money <player> <amount>");
         return true;
     }
+    private long parse(String s) { try { return Long.parseLong(s); } catch(Exception e) { return -1; } }
 }

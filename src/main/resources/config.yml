@@ -1,21 +1,22 @@
-spawn-world: beacon_spawn
+intro-world: beacon_intro
 survival-world: world
-spawn-location:
+intro-location:
   x: 0.5
-  y: 90.0
+  y: 100.0
   z: 0.5
-  yaw: 180.0
+  yaw: 0.0
   pitch: 0.0
 teleport-delay-seconds: 5
 wild:
   min-radius: 1500
   max-radius: 5000
-rift-dagger:
-  custom-model-data: 10001
-  cooldown-seconds: 250
-  hover-seconds: 5
-  rise-height: 20
-  max-target-distance: 70
-  slash-radius: 4.5
-  displacement-radius: 15
-contact-line: 'Contact Danzi on Discord if you have questions.'
+combat-tag-seconds: 10
+contact-line: 'Contact Danzi on Discord if you have questions, or use /behelp or /tutorial for information.'
+rankup:
+  costs: [25000, 100000, 350000, 1000000, 3500000]
+  prestige-multipliers: [1.0, 2.0, 3.5, 5.0]
+prestige-costs: [10000000, 25000000, 50000000]
+relics:
+  aura-radius: 20
+  aura-cooldown-minutes: 20
+  nullshard-radius: 50

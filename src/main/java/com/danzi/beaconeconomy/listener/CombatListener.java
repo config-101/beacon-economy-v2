@@ -5,52 +5,35 @@ import com.danzi.beaconeconomy.util.Msg;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
+import org.bukkit.event.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class CombatListener implements Listener {
-    private static final Map<UUID, Long> combatTaggedUntil = new HashMap<>();
     private final BeaconEconomyPlugin plugin;
+    private final Map<UUID, Long> taggedUntil = new HashMap<>();
+    public CombatListener(BeaconEconomyPlugin plugin) { this.plugin = plugin; }
 
-    public CombatListener(BeaconEconomyPlugin plugin) {
-        this.plugin = plugin;
+    @EventHandler public void onPvP(EntityDamageByEntityEvent e) {
+        if (e.isCancelled()) return;
+        if (e.getDamager() instanceof Player a && e.getEntity() instanceof Player b) {
+            long until = System.currentTimeMillis() + plugin.getConfig().getLong("combat-tag-seconds", 10L) * 1000L;
+            taggedUntil.put(a.getUniqueId(), until); taggedUntil.put(b.getUniqueId(), until);
+            Msg.send(a, "You are combat tagged. Do not log out.", NamedTextColor.RED);
+            Msg.send(b, "You are combat tagged. Do not log out.", NamedTextColor.RED);
+        }
     }
 
-    @EventHandler
-    public void onPvp(EntityDamageByEntityEvent event) {
-        if (!(event.getDamager() instanceof Player damager) || !(event.getEntity() instanceof Player victim)) return;
-        tag(damager);
-        tag(victim);
+    @EventHandler public void onQuit(PlayerQuitEvent e) {
+        Player p = e.getPlayer();
+        if (isTagged(p)) {
+            p.setHealth(0.0);
+            Msg.broadcast(p.getName() + " combat logged and was killed.", NamedTextColor.RED);
+        }
     }
 
-    @EventHandler
-    public void onQuit(PlayerQuitEvent event) {
-        event.quitMessage(null);
-        plugin.getTeleportManager().cancel(event.getPlayer().getUniqueId(), false);
-        if (!isTagged(event.getPlayer().getUniqueId())) return;
-        Bukkit.broadcast(Msg.line(event.getPlayer().getName() + " combat logged and was killed.", NamedTextColor.RED));
-        event.getPlayer().setHealth(0.0);
-        combatTaggedUntil.remove(event.getPlayer().getUniqueId());
-    }
-
-    @EventHandler
-    public void onMove(PlayerMoveEvent event) {
-        plugin.getTeleportManager().handleMove(event.getPlayer(), event.getTo());
-    }
-
-    private void tag(Player player) {
-        combatTaggedUntil.put(player.getUniqueId(), System.currentTimeMillis() + 10_000L);
-        Msg.send(player, "You are in combat for 10 seconds. Do not log out.", NamedTextColor.RED);
-    }
-
-    public static boolean isTagged(UUID uuid) {
-        return combatTaggedUntil.getOrDefault(uuid, 0L) > System.currentTimeMillis();
+    public boolean isTagged(Player p) {
+        return taggedUntil.getOrDefault(p.getUniqueId(), 0L) > System.currentTimeMillis();
     }
 }

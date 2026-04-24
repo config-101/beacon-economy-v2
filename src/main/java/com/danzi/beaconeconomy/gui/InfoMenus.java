@@ -5,94 +5,58 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
-
 import java.util.List;
 
 public final class InfoMenus {
+    public static final String INTRO_TITLE = "Beacon Economy Intro";
     public static final String HELP_TITLE = "Beacon Economy Help";
-    public static final String WELCOME_TITLE = "Welcome to Beacon Economy";
-    public static final String BEACONS_TITLE = "Beacon Market Guide";
-    public static final String RANKS_TITLE = "Ranks and Prestige";
-    public static final String PVP_TITLE = "Death, PvP and Logging";
-    public static final String RELICS_TITLE = "Forgotten Relics";
-    public static final String BLACK_MARKET_TITLE = "Black Market";
-    public static final String PETS_TITLE = "Pet Quarter";
-    public static final String SPAWNERS_TITLE = "Spawner Vault";
-    public static final String FAQ_TITLE = "Beacon Economy FAQ";
-
+    public static final String COMMANDS_TITLE = "Beacon Economy Commands";
+    public static final String ADMIN_TITLE = "Beacon Economy Admin";
     private InfoMenus() {}
 
-    public static Inventory help(BeaconEconomyPlugin plugin, Player player) {
-        Inventory inv = Bukkit.createInventory(null, 27, HELP_TITLE);
-        inv.setItem(10, HomeMenu.simple(Material.KNOWLEDGE_BOOK, "Getting Started", List.of("Use /tutorial to visit the tutorial district.", "Use /wild to begin survival.", plugin.getConfig().getString("contact-line"))));
-        inv.setItem(11, HomeMenu.simple(Material.BEACON, "Beacon Selling", List.of("Public spawn beacon: 40% payout.", "Personal beacons: 100% payout.", "Personal beacons are permanent once confirmed.")));
-        inv.setItem(12, HomeMenu.simple(Material.NETHER_STAR, "Ranks and Prestige", List.of("Rank ladder: Drifter -> Survivor.", "Prestige gives stars and better personal beacon revenue.", "Use /rankup and /prestige later as they are added.")));
-        inv.setItem(13, HomeMenu.simple(Material.IRON_SWORD, "Death and PvP", List.of("Death takes 30% money in the full design.", "PvP gives a 10-second combat tag.", "Logging out while tagged kills you.")));
-        inv.setItem(14, HomeMenu.simple(Material.ENDER_EYE, "Forgotten Relics", List.of("Unique legendary items with ancient powers.", "Use /relic info while holding one.", "Their power can be felt nearby.")));
-        inv.setItem(15, HomeMenu.simple(Material.RECOVERY_COMPASS, "Commands", List.of("/spawn /wild /tutorial /behelp /info", "/sethome /home /homes /delhome", plugin.getConfig().getString("contact-line"))));
-        inv.setItem(16, HomeMenu.simple(Material.BOOK, "Quick Support", List.of("Contact Danzi on Discord if you have questions.", "Use /behelp or /tutorial for information.")));
+    public static Inventory intro(BeaconEconomyPlugin plugin, Player p) {
+        Inventory inv = Bukkit.createInventory(null, 27, INTRO_TITLE);
+        inv.setItem(10, HomeMenu.item(Material.BEACON, "Beacon Economy", List.of("Dark PvP economy survival.", "Make money, rank up, hunt relics.", plugin.getConfig().getString("contact-line"))));
+        inv.setItem(12, HomeMenu.item(Material.NETHER_STAR, "Forgotten Relics", List.of("10 unique relics exist.", "Only one of each can exist.", "Use /relic info while holding one.")));
+        inv.setItem(14, HomeMenu.item(Material.COMPASS, "Start Your Journey", List.of("Click here to use /wild.", "You will be released into survival.")));
+        inv.setItem(16, HomeMenu.item(Material.BOOK, "Help", List.of("Use /behelp, /tutorial, or /commands.", "All common questions are answered there.")));
         return inv;
     }
 
-    public static Inventory section(BeaconEconomyPlugin plugin, String key) {
-        return switch (key.toLowerCase()) {
-            case "welcome" -> simpleSection(WELCOME_TITLE, Material.KNOWLEDGE_BOOK, List.of(
-                "Welcome to Beacon Economy.",
-                "This server and plugin were made by Danzi.",
-                "Use /wild when you are ready to leave the capital city.",
-                plugin.getConfig().getString("contact-line")
-            ));
-            case "beacons" -> simpleSection(BEACONS_TITLE, Material.BEACON, List.of(
-                "There is only one public beacon at spawn.",
-                "Public spawn beacon pays 40% revenue.",
-                "Personal beacons pay 100% revenue.",
-                "Personal beacons are permanent once placed and confirmed."
-            ));
-            case "ranks" -> simpleSection(RANKS_TITLE, Material.NETHER_STAR, List.of(
-                "Rank path: Drifter, Vagrant, Scavenger, Outcast, Rogue, Survivor.",
-                "Prestige adds up to 3 glowing stars.",
-                "Each prestige star increases personal beacon revenue.",
-                "Costs rise sharply with each prestige."
-            ));
-            case "pvp" -> simpleSection(PVP_TITLE, Material.IRON_SWORD, List.of(
-                "Logging out while combat tagged kills you.",
-                "Combat tag lasts 10 seconds in PvP.",
-                "Most teleports are delayed and blocked while tagged.",
-                "Use good positioning and do not panic log out."
-            ));
-            case "relics" -> simpleSection(RELICS_TITLE, Material.ENDER_EYE, List.of(
-                "Forgotten Relics are unique server-wide artifacts.",
-                "Only one of each relic can exist at a time.",
-                "Use /relic info while holding one.",
-                "The void may reclaim a relic if it is lost."
-            ));
-            case "blackmarket" -> simpleSection(BLACK_MARKET_TITLE, Material.ENDER_CHEST, List.of(
-                "The Black Market sells risky, expensive and sometimes unfair offers.",
-                "It exists as a late-game money sink.",
-                "Some deals may be illegal, cursed or simply terrible."
-            ));
-            case "pets" -> simpleSection(PETS_TITLE, Material.WOLF_ARMOR, List.of(
-                "Pets are prestige companions and utility assets.",
-                "Only one active pet at a time in the full design.",
-                "Passive pets are protected; attack pets can fight for you."
-            ));
-            case "spawners" -> simpleSection(SPAWNERS_TITLE, Material.SPAWNER, List.of(
-                "Spawner purchases are meant to be extremely expensive.",
-                "Each purchase scales upward in cost.",
-                "This is a late-game money sink, not an early shortcut."
-            ));
-            default -> simpleSection(FAQ_TITLE, Material.BOOK, List.of(
-                "Use /wild to begin survival.",
-                "Use /spawn to return to the city.",
-                "Use /behelp or /tutorial for information.",
-                plugin.getConfig().getString("contact-line")
-            ));
-        };
+    public static Inventory help(BeaconEconomyPlugin plugin, Player p) {
+        Inventory inv = Bukkit.createInventory(null, 36, HELP_TITLE);
+        inv.setItem(10, HomeMenu.item(Material.COMPASS, "Getting Started", List.of("Use /wild to start.", "Use /spawn to return to intro void.", "Teleports have a 5s delay.")));
+        inv.setItem(11, HomeMenu.item(Material.BEACON, "Beacons", List.of("Personal beacons are permanent.", "Future build: beacon selling and /sellable.")));
+        inv.setItem(12, HomeMenu.item(Material.NETHER_STAR, "Ranks & Prestige", List.of("Drifter -> Survivor.", "Prestige gives stars.", "Prestige boosts personal beacon revenue later.")));
+        inv.setItem(13, HomeMenu.item(Material.IRON_SWORD, "PvP", List.of("10s combat tag.", "Logging out while tagged kills you.")));
+        inv.setItem(14, HomeMenu.item(Material.ENDER_PEARL, "Forgotten Relics", List.of("10 one-of-one relics.", "Long cooldowns.", "Use /relic info.")));
+        inv.setItem(15, HomeMenu.item(Material.CHEST, "Homes", List.of("Max 3 homes.", "/sethome 1-3, /home 1-3, /homes.")));
+        inv.setItem(16, HomeMenu.item(Material.PAPER, "Commands", List.of("Use /commands or /becommands.")));
+        inv.setItem(31, HomeMenu.item(Material.NAME_TAG, "Support", List.of(plugin.getConfig().getString("contact-line"))));
+        return inv;
     }
 
-    private static Inventory simpleSection(String title, Material icon, List<String> lines) {
-        Inventory inv = Bukkit.createInventory(null, 27, title);
-        inv.setItem(13, HomeMenu.simple(icon, title, lines));
+    public static Inventory commands(BeaconEconomyPlugin plugin, Player p) {
+        Inventory inv = Bukkit.createInventory(null, 36, COMMANDS_TITLE);
+        inv.setItem(10, HomeMenu.item(Material.COMPASS, "Travel", List.of("/wild", "/spawn", "/tutorial")));
+        inv.setItem(11, HomeMenu.item(Material.CHEST, "Homes", List.of("/sethome <1-3>", "/home <1-3>", "/homes", "/delhome <1-3>")));
+        inv.setItem(12, HomeMenu.item(Material.EMERALD, "Money", List.of("/money", "/balance")));
+        inv.setItem(13, HomeMenu.item(Material.NETHER_STAR, "Progression", List.of("/rank", "/ranks", "/rankup", "/prestige", "/prestiges")));
+        inv.setItem(14, HomeMenu.item(Material.ENDER_EYE, "Relics", List.of("/relic info")));
+        inv.setItem(15, HomeMenu.item(Material.BOOK, "Help", List.of("/info", "/behelp", "/tutorial", "/commands")));
+        inv.setItem(16, HomeMenu.item(Material.REDSTONE_TORCH, "Staff", List.of("/beadmin", "/staffhelp")));
+        return inv;
+    }
+
+    public static Inventory admin(BeaconEconomyPlugin plugin, Player p) {
+        Inventory inv = Bukkit.createInventory(null, 54, ADMIN_TITLE);
+        inv.setItem(10, HomeMenu.item(Material.PLAYER_HEAD, "Players", List.of("Player control panel scaffold.")));
+        inv.setItem(11, HomeMenu.item(Material.ENDER_EYE, "Relics", List.of("Give/test/reclaim relics.", "Use /beadmin giverelic <id> [player].")));
+        inv.setItem(12, HomeMenu.item(Material.EMERALD, "Economy", List.of("Money and rank tools.")));
+        inv.setItem(13, HomeMenu.item(Material.ICE, "Moderation", List.of("Freeze, vanish, spectate, invsee.")));
+        inv.setItem(14, HomeMenu.item(Material.TNT, "ClearLag", List.of("Click to run /clearlag.")));
+        inv.setItem(15, HomeMenu.item(Material.BOOK, "Help", List.of("Everything plugin-related will be reachable here.")));
+        inv.setItem(49, HomeMenu.item(Material.BARRIER, "Close", List.of("Close menu.")));
         return inv;
     }
 }

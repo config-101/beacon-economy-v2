@@ -4,29 +4,33 @@ version: '${version}'
 api-version: '1.21'
 author: Danzi
 commands:
-  spawn:
-    description: Teleport to spawn hub.
-  wild:
-    description: Teleport to random wilderness coordinates.
-  tutorial:
-    description: Teleport to the tutorial quarter.
-  behelp:
-    description: Open Beacon Economy help.
-  info:
-    description: Show quick Beacon Economy info.
-  sethome:
-    description: Set a home.
-  home:
-    description: Teleport to a home.
-  homes:
-    description: Open the homes menu.
-  delhome:
-    description: Delete a home.
-  relic:
-    description: Forgotten Relic command.
-  beadmin:
-    description: Beacon Economy admin tools.
-    permission: beaconeconomy.admin
+  info: { description: Beacon Economy info. }
+  behelp: { description: Open Beacon Economy help. }
+  tutorial: { description: Open Beacon Economy tutorial. }
+  commands: { description: Open Beacon Economy command guide. }
+  becommands: { description: Open Beacon Economy command guide. }
+  wild: { description: Teleport to wilderness. }
+  spawn: { description: Return to intro/spawn void. }
+  sethome: { description: Set one of your homes. }
+  home: { description: Teleport to one of your homes. }
+  homes: { description: Open your homes GUI. }
+  delhome: { description: Delete one of your homes. }
+  relic: { description: Forgotten Relic commands. }
+  rank: { description: Show your rank. }
+  ranks: { description: Show ranks. }
+  rankup: { description: Rank up. }
+  prestige: { description: Prestige. }
+  prestiges: { description: Show prestige info. }
+  money: { description: Money commands. }
+  balance: { description: View balance. }
+  clearlag: { description: Clear dropped items. }
+  invsee: { description: Staff inventory view. }
+  vanish: { description: Staff vanish. }
+  spectate: { description: Spectate a player. }
+  freeze: { description: Freeze a player. }
+  unfreeze: { description: Unfreeze a player. }
+  staffhelp: { description: Staff help. }
+  beadmin: { description: Beacon Economy admin panel. }
 permissions:
   beaconeconomy.admin:
     default: op

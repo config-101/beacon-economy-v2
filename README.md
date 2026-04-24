@@ -1,45 +1,97 @@
-# Beacon Economy Paper Test Pack
+# Beacon Economy Systems Build
 
-This is a first **Paper plugin test pack** for the Beacon Economy server concept.
-It includes a core playable slice so you can start testing server flow while the larger systems are still being expanded.
+Paper 1.21 source pack for the systems-first Beacon Economy rebuild.
 
-## Included in this test pack
-- Protected hub spawn world (`beacon_spawn`) generated automatically
-- `/spawn`, `/wild`, `/tutorial`, `/behelp`
-- Login always returns players to spawn
-- 10-second PvP combat tag with logout kill
-- Homes system with max 3 homes and a GUI
-- Home restrictions (no spawn world, no nether roof)
-- Rift Dagger Forgotten Relic test implementation
+## Current direction
+This build removes the physical spawn-city concept and replaces it with:
+- first-join-only void intro
+- frozen onboarding over the void
+- GUI-based tutorial/help/commands
+- `/wild` to start survival
+
+## Included systems in this pack
+- Paper 1.21 Gradle project
+- GitHub Actions build workflow
+- Intro void world
+- First-join tutorial GUI
+- `/info`, `/behelp`, `/tutorial`, `/commands`, `/becommands`
+- `/wild`, `/spawn`
+- 3-home system
+- PvP combat tag / combat logout kill
+- Basic staff commands:
+  - `/clearlag`
+  - `/invsee`
+  - `/vanish`
+  - `/spectate`
+  - `/freeze`
+  - `/unfreeze`
+  - `/staffhelp`
+- Basic admin GUI with `/beadmin`
+- Basic money storage and `/money`
+- Rank/prestige framework
+- Personal beacon confirmation/permanence scaffold
+- All 10 Forgotten Relics registered:
+  - Rift Dagger
+  - Void Pulse Control
+  - Nullshard
+  - Black Ledger
+  - Grave Coil
+  - Ashwake Idol
+  - Hunter's Eye
+  - Warden Fang
+  - Storm Lantern
+  - Crown of the Last King
 - `/relic info`
-- `/beadmin giveriftdagger [player]`
-- `/beadmin hubregen`
-- Starter resource pack folder with Rift Dagger texture + GUI textures
+- Admin relic command:
+  - `/beadmin giverelic <relic_id> [player]`
+- Rift Dagger implemented
+- Void Pulse Control implemented
+- Nullshard suppression scaffold
+- Prototype abilities for the other 7 relics
 
-## Not complete yet
-The following are still planned / scaffold-stage and not fully implemented in this test pack:
-- Full economy + sell beacon loop
-- Fancy side scoreboard
-- Rank / prestige progression
-- AFK money zones
-- Pets, black market, spawner shop
-- Full Void Drifter boss system
-- All 10 Forgotten Relics
-- Full spawn mega-build
+## Important
+This is a systems integration build, not the final polished server.
+Resource pack and final textures are intentionally deferred.
 
 ## Build
-Use GitHub Actions or local Gradle:
+Upload this folder to GitHub and run the included workflow, or run locally:
 
 ```bash
 gradle build
 ```
 
-The jar will be placed in:
+The jar will be in:
 
 ```text
 build/libs/
 ```
 
-## Resource pack
-The resource pack source is included in the `resource-pack` folder of the bundle zip.
-You can zip that folder and host it, or expand it later.
+## Useful test commands
+
+```text
+/beadmin
+/beadmin giverelic rift_dagger
+/beadmin giverelic void_pulse_control
+/beadmin giverelic nullshard
+/relic info
+/commands
+/wild
+/spawn
+/sethome 1
+/home 1
+/clearlag
+```
+
+Relic IDs:
+```text
+rift_dagger
+void_pulse_control
+nullshard
+black_ledger
+grave_coil
+ashwake_idol
+hunters_eye
+warden_fang
+storm_lantern
+crown_last_king
+```

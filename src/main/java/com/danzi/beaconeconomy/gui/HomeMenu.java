@@ -1,51 +1,39 @@
 package com.danzi.beaconeconomy.gui;
 
 import com.danzi.beaconeconomy.BeaconEconomyPlugin;
-import com.danzi.beaconeconomy.data.HomeManager;
+import com.danzi.beaconeconomy.data.PlayerData;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.ItemMeta;
-
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public final class HomeMenu {
     public static final String TITLE = "Beacon Economy Homes";
     private HomeMenu() {}
 
-    public static Inventory create(BeaconEconomyPlugin plugin, Player player) {
-        HomeManager manager = plugin.getHomeManager();
+    public static Inventory homes(BeaconEconomyPlugin plugin, Player p) {
         Inventory inv = Bukkit.createInventory(null, 27, TITLE);
-        inv.setItem(10, homeItem(manager, player, 1));
-        inv.setItem(13, homeItem(manager, player, 2));
-        inv.setItem(16, homeItem(manager, player, 3));
-        inv.setItem(22, simple(Material.BOOK, "How to use", List.of("Left click a home to teleport.", "Right click a home to delete it.", "Use /sethome <1-3> to create one.")));
+        PlayerData data = plugin.data().get(p.getUniqueId());
+        inv.setItem(10, item(Material.LODESTONE, label(data,1), lore(data.homes.get(1))));
+        inv.setItem(13, item(Material.LODESTONE, label(data,2), lore(data.homes.get(2))));
+        inv.setItem(16, item(Material.LODESTONE, label(data,3), lore(data.homes.get(3))));
+        inv.setItem(22, item(Material.BOOK, "Home Rules", List.of("Max 3 homes.", "Left click: teleport.", "Right click: delete.", "No homes in intro world or nether roof.")));
         return inv;
     }
-
-    private static ItemStack homeItem(HomeManager manager, Player player, int slot) {
-        Location home = manager.getHome(player.getUniqueId(), slot);
-        if (home == null) {
-            return simple(Material.GRAY_DYE, "Home " + slot + " (empty)", List.of("Use /sethome " + slot));
-        }
-        List<String> lore = new ArrayList<>();
-        lore.add(home.getWorld().getName());
-        lore.add("X: " + home.getBlockX() + " Y: " + home.getBlockY() + " Z: " + home.getBlockZ());
-        lore.add("Left click: teleport");
-        lore.add("Right click: delete");
-        return simple(Material.LODESTONE, "Home " + slot, lore);
+    private static String label(PlayerData data, int slot) { return data.homes.containsKey(slot) ? "Home " + slot : "Home " + slot + " (empty)"; }
+    private static List<String> lore(Location loc) {
+        if (loc == null) return List.of("Use /sethome " + "1-3");
+        return List.of(loc.getWorld().getName(), "X " + loc.getBlockX() + " Y " + loc.getBlockY() + " Z " + loc.getBlockZ(), "Left click to teleport", "Right click to delete");
     }
-
-    public static ItemStack simple(Material material, String name, List<String> lore) {
-        ItemStack item = new ItemStack(material);
-        ItemMeta meta = item.getItemMeta();
-        meta.setDisplayName(name);
-        meta.setLore(lore);
-        item.setItemMeta(meta);
-        return item;
+    public static ItemStack item(Material mat, String name, List<String> lore) {
+        ItemStack it = new ItemStack(mat);
+        ItemMeta m = it.getItemMeta();
+        m.setDisplayName(name);
+        m.setLore(lore);
+        it.setItemMeta(m);
+        return it;
     }
 }
