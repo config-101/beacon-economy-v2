@@ -45,7 +45,7 @@ public class MenuListener implements Listener {
             }
             return;
         }
-        if (title.equals(InfoMenus.HELP_TITLE) || title.equals(InfoMenus.TUTORIAL_TITLE)) {
+        if (title.equals(InfoMenus.HELP_TITLE) || title.equals(InfoMenus.WELCOME_TITLE) || title.equals(InfoMenus.BEACONS_TITLE) || title.equals(InfoMenus.RANKS_TITLE) || title.equals(InfoMenus.PVP_TITLE) || title.equals(InfoMenus.RELICS_TITLE) || title.equals(InfoMenus.BLACK_MARKET_TITLE) || title.equals(InfoMenus.PETS_TITLE) || title.equals(InfoMenus.SPAWNERS_TITLE) || title.equals(InfoMenus.FAQ_TITLE)) {
             event.setCancelled(true);
         }
     }
