@@ -193,7 +193,7 @@ public class RelicManager {
                 p.setFlying(false);
                 p.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 5*20, 0));
                 p.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 2*20, 0));
-                p.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, 2*20, 0));
+                p.addPotionEffect(new PotionEffect(PotionEffectType.NAUSEA, 2*20, 0));
                 Msg.send(p, "The rift collapses on you.", NamedTextColor.RED);
             }
         }, 5*20L);
@@ -224,7 +224,7 @@ public class RelicManager {
                 le.teleport(t);
                 le.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 5*20, 0));
                 le.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 2*20, 0));
-                le.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, 2*20, 0));
+                le.addPotionEffect(new PotionEffect(PotionEffectType.NAUSEA, 2*20, 0));
             }
         }
         return true;
