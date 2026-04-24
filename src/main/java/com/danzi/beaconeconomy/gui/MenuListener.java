@@ -4,9 +4,12 @@ import com.danzi.beaconeconomy.BeaconEconomyPlugin;
 import com.danzi.beaconeconomy.data.PlayerData;
 import com.danzi.beaconeconomy.util.Msg;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.*;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class MenuListener implements Listener {
     private final BeaconEconomyPlugin plugin;
@@ -23,9 +26,31 @@ public class MenuListener implements Listener {
                 pd.introComplete = true;
                 plugin.data().save();
                 p.closeInventory();
+
+                World w = plugin.survivalWorld();
+                if (w == null) {
+                    Msg.send(p, "Survival world not found.", NamedTextColor.RED);
+                    return;
+                }
+                int min = plugin.getConfig().getInt("wild.min-radius", 1500);
+                int max = plugin.getConfig().getInt("wild.max-radius", 5000);
+                ThreadLocalRandom r = ThreadLocalRandom.current();
+                for (int i = 0; i < 40; i++) {
+                    int x = r.nextInt(min, max) * (r.nextBoolean() ? 1 : -1);
+                    int z = r.nextInt(min, max) * (r.nextBoolean() ? 1 : -1);
+                    int y = w.getHighestBlockYAt(x, z) + 1;
+                    Block below = w.getBlockAt(x, y - 1, z);
+                    if (!below.isLiquid() && below.getType().isSolid()) {
+                        p.teleport(new Location(w, x + 0.5, y, z + 0.5));
+                        p.setFlying(false);
+                        p.setAllowFlight(false);
+                        Msg.send(p, "You have begun your journey.", NamedTextColor.GREEN);
+                        return;
+                    }
+                }
                 p.setFlying(false);
                 p.setAllowFlight(false);
-                plugin.getServer().dispatchCommand(p, "wild");
+                Msg.send(p, "Could not find a safe wild location. Try /wild.", NamedTextColor.RED);
             }
             return;
         }
